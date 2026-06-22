@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'upload_song_screen.dart';
-import 'edit_song_screen.dart';
 
 class MySongsScreen extends StatefulWidget {
   const MySongsScreen({super.key});
@@ -10,23 +8,18 @@ class MySongsScreen extends StatefulWidget {
 }
 
 class _MySongsScreenState extends State<MySongsScreen> {
-  final TextEditingController searchController = TextEditingController();
-
-  List<Map<String, String>> songs = [];
-
-  String searchText = "";
-
-  void addSong(Map<String, String> song) {
-    setState(() {
-      songs.add(song);
-    });
-  }
-
-  void updateSong(int index, Map<String, String> updatedSong) {
-    setState(() {
-      songs[index] = updatedSong;
-    });
-  }
+  List<Map<String, String>> songs = [
+    {
+      'title': 'African Love',
+      'artist': 'Kemal Artist',
+      'genre': 'Afrobeat',
+    },
+    {
+      'title': 'Dar Sound',
+      'artist': 'Tunely Star',
+      'genre': 'Bongo Flava',
+    },
+  ];
 
   void deleteSong(int index) {
     setState(() {
@@ -36,130 +29,79 @@ class _MySongsScreenState extends State<MySongsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredSongs = songs.where((song) {
-      final title = song["title"]?.toLowerCase() ?? "";
-      final artist = song["artist"]?.toLowerCase() ?? "";
-      final query = searchText.toLowerCase();
-
-      return title.contains(query) || artist.contains(query);
-    }).toList();
-
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: const Color(0xFF050505),
       appBar: AppBar(
-        title: const Text("My Songs"),
-        backgroundColor: Colors.green,
+        backgroundColor: const Color(0xFF050505),
         foregroundColor: Colors.white,
+        title: const Text('My Songs'),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.upload),
-        label: const Text("Upload Song"),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => UploadSongScreen(
-                onSongUploaded: addSong,
+      body: songs.isEmpty
+          ? const Center(
+              child: Text(
+                'No songs uploaded yet',
+                style: TextStyle(color: Colors.white54),
               ),
-            ),
-          );
-        },
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: searchController,
-              decoration: InputDecoration(
-                hintText: "Search song or artist...",
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  searchText = value;
-                });
-              },
-            ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(18),
+              itemCount: songs.length,
+              itemBuilder: (context, index) {
+                final song = songs[index];
 
-            const SizedBox(height: 16),
-
-            Expanded(
-              child: filteredSongs.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "No songs found. Upload your first song.",
-                        style: TextStyle(fontSize: 16),
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 14),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 28,
+                        backgroundColor: Color(0xFF1DB954),
+                        child: Icon(
+                          Icons.music_note,
+                          color: Colors.black,
+                        ),
                       ),
-                    )
-                  : ListView.builder(
-                      itemCount: filteredSongs.length,
-                      itemBuilder: (context, index) {
-                        final song = filteredSongs[index];
-                        final realIndex = songs.indexOf(song);
+                      const SizedBox(width: 14),
 
-                        return Card(
-                          child: ListTile(
-                            leading: const CircleAvatar(
-                              backgroundColor: Colors.green,
-                              child: Icon(
-                                Icons.music_note,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              song['title']!,
+                              style: const TextStyle(
                                 color: Colors.white,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            title: Text(song["title"] ?? ""),
-                            subtitle: Text(
-                              "${song["artist"]} • ${song["genre"]} • ${song["streams"]} Streams",
+                            Text(
+                              '${song['artist']} • ${song['genre']}',
+                              style: const TextStyle(
+                                color: Colors.white54,
+                                fontSize: 13,
+                              ),
                             ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.blue,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => EditSongScreen(
-                                          song: song,
-                                          onSongUpdated: (updatedSong) {
-                                            updateSong(
-                                              realIndex,
-                                              updatedSong,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
-                                  onPressed: () {
-                                    deleteSong(realIndex);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                          ],
+                        ),
+                      ),
+
+                      IconButton(
+                        onPressed: () => deleteSong(index),
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          ],
-        ),
-      ),
     );
   }
 }
